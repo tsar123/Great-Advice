@@ -1,8 +1,10 @@
 import json
+import sqlite3
 import requests as requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils import executor
+from datetime import datetime
 
 from auth_bot import token
 
@@ -31,7 +33,18 @@ def telegramBot():
 
     @dp.message_handler(commands=["start"])
     async def startingMessage(message: types.Message):
-        await message.answer("***Содержит ненормативную лексику!***\nПрисылает рандомный охуенный совет!\nПростое решение в виде tg-бота добавит в Вашу жизнь чертову гору мотивации и сделает Ваш день более продуктивным.\nОхуенный блять совет — каждый день.\nА по пятницам — охуительный!", reply_markup=markup)
+        con = sqlite3.connect('users.db')
+        cour = con.cursor()
+
+        cour.execute("""CREATE TABLE IF NOT EXISTS id_db(
+            id INTEGER
+        )""")
+        con.commit()
+
+        user = [message.chat.id, str(datetime.now().date())]
+        cour.execute("INSERT INTO id_db VALUES(?, ?);", user)
+        con.commit()
+        await message.answer("***Содержит ненормативную лексику!***\nПрисылает рандомный охуенный совет!\nПростое решение в виде tg-бота добавит в Вашу жизнь чертову гору мотивации и сделает Ваш день более продуктивным.\nКак печенье с предсказанием - только телеграм с охуенными советами!", reply_markup=markup)
 
     @dp.message_handler(commands=["day"])
     async def adviceDay(message: types.Message):
@@ -81,6 +94,6 @@ def telegramBot():
 if __name__ == '__main__':
     # api_test("https://fucking-great-advice.ru/api/random") #рандомный совет
     # api_test("https://fucking-great-advice.ru/api/latest") #совет дня
-    "https://fucking-great-advice.ru/add"  # предложить совет
-    "https://shop.fucking-great-advice.ru/"  # купить мерч
+    # "https://fucking-great-advice.ru/add"  # предложить совет
+    # "https://shop.fucking-great-advice.ru/"  # купить мерч
     telegramBot()
